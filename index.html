@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Timetable Scheduler</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#4f46e5;--primary2:#4338ca;--line:#e6e9f0;--danger:#dc2626;--success:#15803d;--shadow:0 10px 30px rgba(31,41,55,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}
+.sidebar{width:245px;background:#111827;color:white;padding:24px 16px;position:fixed;top:0;bottom:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
+.logo{font-size:20px;font-weight:800;padding:8px 12px 28px}.logo span{color:#818cf8}
+.brandrow{display:flex;align-items:center;justify-content:space-between;padding:0 8px 20px}.brandrow .logo{padding:8px 4px 8px}.theme-toggle{width:38px;height:38px;border-radius:50%;background:#1f2937;color:#f8fafc;border:1px solid #374151;font-size:17px}.theme-toggle:hover{background:#374151}
+body.dark{--bg:#0b1220;--card:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#253044;--shadow:0 10px 30px rgba(0,0,0,.25)}body.dark .card,body.dark .stat,body.dark .slot{background:#111827}body.dark .slothead,body.dark .graphwrap{background:#172033}body.dark th,body.dark td{border-color:#253044}body.dark .iconbtn{background:#1f2937;color:#e5e7eb}body.dark .search,body.dark input,body.dark select{background:#111827;color:#e5e7eb;border-color:#334155}body.dark .modalbox{background:#111827;color:#e5e7eb}
+.nav button{width:100%;text-align:left;background:transparent;color:#cbd5e1;padding:12px 14px;border-radius:10px;margin:3px 0}.nav button.active,.nav button:hover{background:#1f2937;color:white}.nav small{display:block;color:#64748b;padding:20px 14px 8px;text-transform:uppercase;font-size:10px;letter-spacing:1px}
+.main{margin-left:245px;width:calc(100% - 245px);padding:28px 34px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.top h1{margin:0;font-size:28px}.top p{margin:5px 0 0;color:var(--muted)}
+.btn{background:var(--primary);color:#fff;padding:10px 16px;border-radius:9px;font-weight:600}.btn:hover{background:var(--primary2)}.btn.secondary{background:#eef2ff;color:#4338ca}.btn.danger{background:#fee2e2;color:#b91c1c}.btn.green{background:#dcfce7;color:#166534}
+.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.stat{background:var(--card);padding:20px;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}.stat .num{font-size:28px;font-weight:800}.stat .label{color:var(--muted);font-size:13px;margin-top:4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow);margin-top:18px}.card h2{font-size:18px;margin:0 0 16px}.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}.toolbar .left{display:flex;gap:10px}.search{padding:10px 12px;border:1px solid var(--line);border-radius:9px;width:230px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--line);font-size:14px}th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.tag{display:inline-block;background:#eef2ff;color:#4338ca;padding:4px 8px;border-radius:20px;font-size:12px;margin:2px}
+.actions{display:flex;gap:7px}.iconbtn{padding:7px 9px;border-radius:7px;background:#f1f5f9}.empty{text-align:center;color:var(--muted);padding:30px}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.modal.show{display:flex}.modalbox{background:#fff;width:min(560px,100%);border-radius:16px;padding:24px}.modalbox h2{margin-top:0}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#475467}.field input,.field select{width:100%;padding:10px;border:1px solid #d8dee9;border-radius:8px}.full{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.notice{padding:13px 15px;border-radius:10px;background:#eef2ff;color:#3730a3;margin-bottom:16px}.error{background:#fef2f2;color:#991b1b}.success{background:#f0fdf4;color:#166534}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.slot{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}.slothead{background:#f8fafc;padding:12px 14px;font-weight:700}.exam{padding:12px 14px;border-top:1px solid var(--line)}.exam strong{display:block}.exam small{color:var(--muted)}
+.graphwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;padding:18px;background:#fafbff}.graph{position:relative;min-width:650px;height:400px}.node{position:absolute;width:100px;height:48px;border-radius:24px;background:#4f46e5;cursor:pointer;transition:transform .18s,opacity .18s,box-shadow .18s,filter .18s;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:700;box-shadow:0 5px 14px rgba(79,70,229,.25);z-index:2}.node.dim{opacity:.22;filter:grayscale(.7)}.node.selected{transform:scale(1.08);box-shadow:0 0 0 4px #f59e0b,0 8px 20px rgba(245,158,11,.35)}.node.conflict{background:#dc2626;box-shadow:0 0 0 3px #fecaca,0 6px 18px rgba(220,38,38,.35)}.edge{position:absolute;height:2px;background:#cbd5e1;transition:background .18s,height .18s,box-shadow .18s;transform-origin:0 50%;z-index:1}.edge.highlight{height:4px;background:#ef4444;box-shadow:0 0 7px rgba(239,68,68,.55)}
+@media(max-width:850px){.sidebar{width:70px}.logo{font-size:0}.logo span{font-size:18px}.brandrow{padding:0 4px 20px}.theme-toggle{width:34px;height:34px;font-size:15px}.brandrow{display:flex;align-items:center;justify-content:space-between;padding:0 8px 20px}.brandrow .logo{padding:8px 4px 8px}.theme-toggle{width:38px;height:38px;border-radius:50%;background:#1f2937;color:#f8fafc;border:1px solid #374151;font-size:17px}.theme-toggle:hover{background:#374151}
+body.dark{--bg:#0b1220;--card:#111827;--text:#e5e7eb;--muted:#94a3b8;--line:#253044;--shadow:0 10px 30px rgba(0,0,0,.25)}body.dark .card,body.dark .stat,body.dark .slot{background:#111827}body.dark .slothead,body.dark .graphwrap{background:#172033}body.dark th,body.dark td{border-color:#253044}body.dark .iconbtn{background:#1f2937;color:#e5e7eb}body.dark .search,body.dark input,body.dark select{background:#111827;color:#e5e7eb;border-color:#334155}body.dark .modalbox{background:#111827;color:#e5e7eb}
+.nav button{font-size:0;text-align:center}.main{margin-left:70px;width:calc(100% - 70px);padding:20px}.grid{grid-template-columns:repeat(2,1fr)}.slots{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}}
+
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#475467}.field input,.field select{width:100%;padding:10px;border:1px solid #d8dee9;border-radius:8px}
+.actions{display:flex;gap:7px;flex-wrap:wrap}.info-card{min-height:150px}.timetable-day{border:1px solid var(--line);border-radius:14px;margin-bottom:16px;overflow:hidden;background:var(--card)}.day-title{padding:14px 16px;background:#f8fafc;font-weight:800}.slot-row{display:grid;grid-template-columns:190px 1fr;min-height:90px;border-top:1px solid var(--line)}.slot-time{padding:15px;font-weight:700}.slot-exams{padding:12px;display:flex;gap:10px;flex-wrap:wrap}.exam-chip{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;min-width:190px}.exam-chip strong{display:block}.exam-chip small{color:var(--muted)}.validation-list{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.validation-item{padding:9px 12px;border-radius:9px;background:#f0fdf4;color:#166534;font-size:13px}.validation-item.warn{background:#fff7ed;color:#9a3412}.print-only{display:none}
+@media print{.sidebar,.top .btn,.validation-list{display:none!important}.main{margin:0;width:100%;padding:0}.page{display:none!important}.page#timetable{display:block!important}.card{box-shadow:none;border:0}.timetable-day{break-inside:avoid}.print-only{display:block}}
+body.dark .day-title{background:#172033}body.dark .exam-chip{background:#111827}body.dark .slot-row{border-color:#253044}body.dark .btn.secondary{background:#312e81;color:#e0e7ff}body.dark .notice{background:#1e1b4b;color:#c7d2fe}body.dark .field label{color:#cbd5e1}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+<div class="brandrow"><div class="logo">Exam<span>Flow</span></div><button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle dark mode"><span id="themeIcon">☀</span></button></div>
+<div class="nav">
+<small>Management</small>
+<button class="active" onclick="showPage('dashboard',this)">Dashboard</button>
+<button onclick="showPage('classes',this)">Classes</button>
+<button onclick="showPage('subjects',this)">Subjects</button>
+<button onclick="showPage('assignments',this)">Class Subjects</button>
+<button onclick="showPage('rooms',this)">Exam Rooms</button>
+<small>Scheduling</small>
+<button onclick="showPage('graph',this)">Conflict Graph</button>
+<button onclick="showPage('timetable',this)">Timetable</button>
+<small>Project</small>
+<button onclick="showPage('information',this)">Information</button>
+</div>
+</aside>
+<main class="main">
+<section id="dashboard" class="page active">
+<div class="top"><div><h1>Exam Timetable Scheduler</h1><p>Graph-coloring based examination scheduling system</p></div><button class="btn" onclick="generateSchedule()">Generate Timetable</button></div>
+<div class="grid">
+<div class="stat"><div class="num" id="classCount">0</div><div class="label">Classes</div></div>
+<div class="stat"><div class="num" id="subjectCount">0</div><div class="label">Subjects</div></div>
+<div class="stat"><div class="num" id="examCount">0</div><div class="label">Exam Entries</div></div>
+<div class="stat"><div class="num" id="slotCount">0</div><div class="label">Time Slots Used</div></div>
+</div>
+<div class="card"><h2>Scheduling Settings</h2>
+<div class="formgrid">
+</div>
+</div>
+<div class="card"><h2>How the system works</h2>
+<div class="notice">Each exam is represented as a vertex. Two exams are connected when they belong to the same class. A graph-coloring algorithm assigns different colors (time slots) to connected exams.</div>
+<table><thead><tr><th>Step</th><th>What happens</th></tr></thead><tbody>
+<tr><td>1. Manage data</td><td>Add or edit classes and subjects.</td></tr>
+<tr><td>2. Assign subjects</td><td>Select which subjects each class has.</td></tr>
+<tr><td>3. Build graph</td><td>Subjects in the same class become conflicting vertices.</td></tr>
+<tr><td>4. Color graph</td><td>Greedy coloring assigns exams to available slots without conflicts.</td></tr>
+<tr><td>5. Generate timetable</td><td>Colored vertices are displayed as exam time slots.</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="classes" class="page"><div class="top"><div><h1>Classes</h1><p>Create and manage examination classes.</p></div><button class="btn" onclick="openClass()">+ Add Class</button></div><div class="card"><div class="toolbar"><input class="search" placeholder="Search classes..." oninput="renderClasses(this.value)"></div><div id="classesTable"></div></div></section>
+
+<section id="subjects" class="page"><div class="top"><div><h1>Subjects</h1><p>Create and manage exam subjects.</p></div><button class="btn" onclick="openSubject()">+ Add Subject</button></div><div class="card"><div class="toolbar"><input class="search" placeholder="Search subjects..." oninput="renderSubjects(this.value)"></div><div id="subjectsTable"></div></div></section>
+
+<section id="assignments" class="page"><div class="top"><div><h1>Class Subjects</h1><p>Assign subjects to each class. This creates the scheduling conflicts.</p></div><button class="btn" onclick="openAssignment()">+ Assign Subject</button></div><div class="card"><div id="assignmentsTable"></div></div></section>
+
+<section id="rooms" class="page"><div class="top"><div><h1>Exam Rooms</h1><p>Manage rooms and seating capacities for exam allocation.</p></div><button class="btn" onclick="openRoom()">+ Add Room</button></div><div class="card"><div id="roomsTable"></div></div></section>
+
+<section id="graph" class="page"><div class="top"><div><h1>Conflict Graph</h1><p>Vertices represent subjects; edges represent class conflicts.</p></div><button class="btn secondary" onclick="buildGraph()">Refresh Graph</button></div><div class="card"><div id="graphInfo"></div><div class="graphwrap"><div class="graph" id="graphCanvas"></div></div><div class="card" style="box-shadow:none;margin:18px 0 0"><h2>Subject Conflict Details</h2><div id="conflictDetails"></div></div></div></section>
+
+<section id="timetable" class="page"><div class="top"><div><h1>Generated Timetable</h1><p id="scheduleStatus">Generate a timetable after setting up your classes and subjects.</p></div><div class="actions"><button class="btn secondary" onclick="printTimetable()">Print / PDF</button><button class="btn secondary" onclick="exportCSV()">Excel / CSV</button><button class="btn" onclick="generateSchedule()">Generate Timetable</button></div></div><div id="validationPanel"></div><div class="card"><div id="timetableView"></div></div></section>
+<section id="information" class="page"><div class="top"><div><h1>Information</h1><p>Project overview and graph-theory concepts used by Exam Flow.</p></div></div>
+<div class="card"><h2>About Exam Flow</h2><p>Exam Flow is an examination timetable scheduling system designed as an application of <b>Graph Theory</b>. The administrator manages classes, subjects and rooms, assigns subjects to classes, and the system generates a conflict-free timetable.</p>
+<div class="notice"><b>Main idea:</b> Exam Timetabling can be modeled as a <b>Graph Coloring Problem</b>. A vertex represents an exam/subject, an edge represents a conflict, and a color represents an exam time slot.</div></div>
+<div class="grid">
+<div class="card"><h2>1. Vertex</h2><p>Each subject that has been assigned to at least one class becomes a vertex in the conflict graph.</p></div>
+<div class="card"><h2>2. Edge</h2><p>Two subject vertices are connected when they belong to the same class. They therefore cannot be scheduled in the same time slot.</p></div>
+<div class="card"><h2>3. Graph Coloring</h2><p>The system assigns a color to each vertex so adjacent vertices receive different colors.</p></div>
+<div class="card"><h2>4. Greedy Algorithm</h2><p>Subjects are processed from higher conflict degree to lower degree. Each subject receives the first available color not used by its neighbors.</p></div>
+<div class="card"><h2>5. Chromatic Number</h2><p>The number of colors used by the coloring is the timetable's required number of distinct exam slots under this coloring. It is a practical upper bound produced by the greedy method; the true minimum may be lower.</p></div>
+<div class="card"><h2>6. Time Slots</h2><p>Each color becomes one exam slot. A day contains two slots: <b>9:00 AM–12:00 PM</b> and <b>1:00 PM–4:00 PM</b>.</p></div>
+<div class="card"><h2>7. Room Allocation</h2><p>For each scheduled exam, Exam Flow selects a room with enough capacity. If several exams share a slot, it tries to give each exam a different suitable room.</p></div>
+<div class="card"><h2>8. Validation</h2><p>Before and after scheduling, the system checks duplicate assignments, missing subjects, conflicts, room capacity .</p></div>
+</div>
+<div class="card"><h2>Scheduling Flow</h2><div class="notice">Classes & Subjects → Class-Subject Assignments → Conflict Graph → Greedy Graph Coloring → Colors become Time Slots → Day Mapping → Room Allocation → Final Timetable</div></div>
+</section>
+</main></div>
+
+<div class="modal" id="modal"><div class="modalbox" id="modalBox"></div></div>
+
+<script>
+const defaultData={
+classes:[{id:1,name:"CSE S3 A",students:30},{id:2,name:"CSE S3 B",students:28},{id:3,name:"CSE S3 C",students:32}],
+rooms:[{id:1,name:"Room 101",capacity:40},{id:2,name:"Room 102",capacity:35},{id:3,name:"Room 103",capacity:30}],
+settings:{},
+subjects:[
+{id:1,name:"Data Structures",code:"CS301"},{id:2,name:"Database Management",code:"CS302"},{id:3,name:"Operating Systems",code:"CS303"},{id:4,name:"Mathematics",code:"MA301"},{id:5,name:"Java Programming",code:"CS304"},{id:6,name:"Computer Networks",code:"CS305"}
+],
+assignments:[
+{id:1,classId:1,subjectId:1},{id:2,classId:1,subjectId:2},{id:3,classId:1,subjectId:3},{id:4,classId:1,subjectId:4},{id:5,classId:1,subjectId:5},
+{id:6,classId:2,subjectId:1},{id:7,classId:2,subjectId:2},{id:8,classId:2,subjectId:4},{id:9,classId:2,subjectId:5},{id:10,classId:2,subjectId:6},
+{id:11,classId:3,subjectId:1},{id:12,classId:3,subjectId:3},{id:13,classId:3,subjectId:4},{id:14,classId:3,subjectId:5},{id:15,classId:3,subjectId:6}
+]};
+let data=JSON.parse(localStorage.examScheduler||JSON.stringify(defaultData)), schedule=[];
+
+function save(){localStorage.examScheduler=JSON.stringify(data);updateStats()}
+function applyTheme(theme){
+ document.body.classList.toggle('dark',theme==='dark');
+ localStorage.setItem('examTheme',theme);
+ const icon=document.getElementById('themeIcon');
+ if(icon)icon.textContent=theme==='dark'?'☀':'☾';
+ const btn=document.getElementById('themeToggle');
+ if(btn)btn.title=theme==='dark'?'Switch to light mode':'Switch to dark mode';
+}
+function toggleTheme(){applyTheme(document.body.classList.contains('dark')?'light':'dark')}
+function showPage(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');if(id==='classes')renderClasses();if(id==='subjects')renderSubjects();if(id==='assignments')renderAssignments();if(id==='graph')buildGraph();if(id==='timetable')renderTimetable()}
+function updateStats(){document.getElementById('classCount').textContent=data.classes.length;document.getElementById('subjectCount').textContent=data.subjects.length;document.getElementById('examCount').textContent=data.assignments.length;document.getElementById('slotCount').textContent=schedule.length}
+function openModal(content){document.getElementById('modalBox').innerHTML=content;document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()})
+
+function openClass(id=null){let x=data.classes.find(a=>a.id===id)||{name:'',students:''};openModal(`<h2>${id?'Edit':'Add'} Class</h2><div class="formgrid"><div class="field full"><label>Class Name</label><input id="fName" value="${x.name}"></div><div class="field"><label>Student Count</label><input id="fStudents" type="number" value="${x.students}"></div></div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveClass(${id||0})">Save</button></div>`)}
+function saveClass(id){let name=fName.value.trim();if(!name)return alert('Enter a class name.');if(id){Object.assign(data.classes.find(x=>x.id===id),{name,students:+fStudents.value||0})}else data.classes.push({id:Date.now(),name,students:+fStudents.value||0});save();closeModal();renderClasses()}
+function renderClasses(q=''){let a=data.classes.filter(x=>x.name.toLowerCase().includes(q.toLowerCase()));document.getElementById('classesTable').innerHTML=a.length?`<table><thead><tr><th>Class</th><th>Students</th><th>Subjects</th><th>Actions</th></tr></thead><tbody>${a.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.students||'-'}</td><td>${data.assignments.filter(y=>y.classId===x.id).length}</td><td class="actions"><button class="iconbtn" onclick="openClass(${x.id})">Edit</button><button class="iconbtn" onclick="deleteClass(${x.id})">Delete</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No classes found.</div>'}
+function deleteClass(id){if(confirm('Delete this class and its subject assignments?')){data.classes=data.classes.filter(x=>x.id!==id);data.assignments=data.assignments.filter(x=>x.classId!==id);save();renderClasses()}}
+
+function openSubject(id=null){let x=data.subjects.find(a=>a.id===id)||{name:'',code:''};openModal(`<h2>${id?'Edit':'Add'} Subject</h2><div class="formgrid"><div class="field"><label>Subject Name</label><input id="fName" value="${x.name}"></div><div class="field"><label>Subject Code</label><input id="fCode" value="${x.code}"></div></div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveSubject(${id||0})">Save</button></div>`)}
+function saveSubject(id){let name=fName.value.trim(),code=fCode.value.trim();if(!name)return alert('Enter a subject name.');if(id)Object.assign(data.subjects.find(x=>x.id===id),{name,code});else data.subjects.push({id:Date.now(),name,code});save();closeModal();renderSubjects()}
+function renderSubjects(q=''){let a=data.subjects.filter(x=>(x.name+x.code).toLowerCase().includes(q.toLowerCase()));document.getElementById('subjectsTable').innerHTML=a.length?`<table><thead><tr><th>Subject</th><th>Code</th><th>Classes</th><th>Actions</th></tr></thead><tbody>${a.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.code||'-'}</td><td>${data.assignments.filter(y=>y.subjectId===x.id).length}</td><td class="actions"><button class="iconbtn" onclick="openSubject(${x.id})">Edit</button><button class="iconbtn" onclick="deleteSubject(${x.id})">Delete</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No subjects found.</div>'}
+function deleteSubject(id){if(confirm('Delete this subject and its assignments?')){data.subjects=data.subjects.filter(x=>x.id!==id);data.assignments=data.assignments.filter(x=>x.subjectId!==id);save();renderSubjects()}}
+
+function openAssignment(){openModal(`<h2>Assign Subject to Class</h2><div class="formgrid"><div class="field"><label>Class</label><select id="fClass">${data.classes.map(x=>`<option value="${x.id}">${x.name}</option>`).join('')}</select></div><div class="field"><label>Subject</label><select id="fSubject">${data.subjects.map(x=>`<option value="${x.id}">${x.name} (${x.code})</option>`).join('')}</select></div></div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveAssignment()">Assign</button></div>`)}
+function saveAssignment(){let classId=+fClass.value,subjectId=+fSubject.value;if(data.assignments.some(x=>x.classId===classId&&x.subjectId===subjectId))return alert('This subject is already assigned to this class.');data.assignments.push({id:Date.now(),classId,subjectId});save();closeModal();renderAssignments()}
+function renderAssignments(){document.getElementById('assignmentsTable').innerHTML=data.assignments.length?`<table><thead><tr><th>Class</th><th>Subject</th><th>Code</th><th>Action</th></tr></thead><tbody>${data.assignments.map(x=>{let c=data.classes.find(y=>y.id===x.classId),s=data.subjects.find(y=>y.id===x.subjectId);return `<tr><td><span class="tag">${c?.name||'Unknown'}</span></td><td><b>${s?.name||'Unknown'}</b></td><td>${s?.code||'-'}</td><td><button class="iconbtn" onclick="deleteAssignment(${x.id})">Remove</button></td></tr>`}).join('')}</tbody></table>`:'<div class="empty">No assignments yet.</div>'}
+function deleteAssignment(id){data.assignments=data.assignments.filter(x=>x.id!==id);save();renderAssignments()}
+
+
+function getExams(){
+ return data.subjects.map(s=>({id:s.id,name:s.name,code:s.code,classes:data.assignments.filter(a=>a.subjectId===s.id).map(a=>a.classId)})).filter(x=>x.classes.length);
+}
+function getGraph(){
+ const exams=getExams(), adj={}; exams.forEach(e=>adj[e.id]=new Set());
+ for(let i=0;i<exams.length;i++) for(let j=i+1;j<exams.length;j++)
+  if(exams[i].classes.some(c=>exams[j].classes.includes(c))){adj[exams[i].id].add(exams[j].id);adj[exams[j].id].add(exams[i].id)}
+ return {exams,adj};
+}
+function buildGraph(){
+ const {exams,adj}=getGraph(); let edges=[];
+ exams.forEach(e=>[...adj[e.id]].forEach(n=>{if(e.id<n)edges.push([e.id,n])}));
+ document.getElementById('graphInfo').innerHTML=`<div class="notice"><b>${exams.length} vertices</b> · <b>${edges.length} conflict edges</b> · Graph coloring slots: <b>${schedule.length||'not generated yet'}</b><br><small>Click a subject node to highlight its conflicting subjects.</small></div>`;
+ let canvas=document.getElementById('graphCanvas'); canvas.innerHTML='';
+ let n=Math.min(exams.length,10), pos=[], nodeEls=new Map(), edgeEls=[];
+ if(!n){canvas.innerHTML='<div class="empty">No assigned subjects to display. Assign subjects to classes first.</div>';return}
+ for(let i=0;i<n;i++){let ang=(Math.PI*2*i/n)-Math.PI/2;pos.push({x:275+210*Math.cos(ang),y:175+145*Math.sin(ang)});let d=document.createElement('div');d.className='node';d.dataset.id=exams[i].id;d.style.left=(pos[i].x-50)+'px';d.style.top=(pos[i].y-24)+'px';d.textContent=exams[i].name;d.title='Click to highlight conflicts';d.onclick=()=>highlightNode(exams[i].id,adj,nodeEls,edgeEls);canvas.appendChild(d);nodeEls.set(exams[i].id,d)}
+ edges.forEach(e=>{let i=exams.findIndex(x=>x.id===e[0]),j=exams.findIndex(x=>x.id===e[1]);if(i<0||j<0||i>=n||j>=n)return;let dx=pos[j].x-pos[i].x,dy=pos[j].y-pos[i].y,len=Math.hypot(dx,dy),line=document.createElement('div');line.className='edge';line.dataset.a=e[0];line.dataset.b=e[1];line.style.left=pos[i].x+'px';line.style.top=pos[i].y+'px';line.style.width=len+'px';line.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;canvas.appendChild(line);edgeEls.push(line)});
+ document.getElementById('conflictDetails').innerHTML=exams.map(e=>`<div class="conflict-row" data-subject="${e.id}" style="padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer"><b>${e.name}</b> <span class="tag">${adj[e.id].size} conflict${adj[e.id].size===1?'':'s'}</span><br><small>${adj[e.id].size?[...adj[e.id]].map(id=>exams.find(x=>x.id===id)?.name).join(', '):'No conflicts with other assigned subjects.'}</small></div>`).join('');
+ document.querySelectorAll('.conflict-row').forEach(row=>row.onclick=()=>highlightNode(Number(row.dataset.subject),adj,nodeEls,edgeEls));
+}
+function highlightNode(id,adj,nodeEls,edgeEls){
+ const conflicts=adj[id]||new Set();
+ nodeEls.forEach((el,nodeId)=>{el.classList.remove('selected','conflict','dim');if(nodeId===id)el.classList.add('selected');else if(conflicts.has(nodeId))el.classList.add('conflict');else el.classList.add('dim')});
+ edgeEls.forEach(el=>{let a=Number(el.dataset.a),b=Number(el.dataset.b);el.classList.toggle('highlight',a===id||b===id)});
+}
+function validateData(){
+ let issues=[],warnings=[];
+ data.classes.forEach(c=>{if(!data.assignments.some(a=>a.classId===c.id))warnings.push(`${c.name} has no subjects`)});
+ data.assignments.forEach(a=>{if(!data.subjects.some(s=>s.id===a.subjectId))issues.push('An assignment references a missing subject');if(!data.classes.some(c=>c.id===a.classId))issues.push('An assignment references a missing class')});
+ data.rooms.forEach(r=>{if(r.capacity<=0)issues.push(`${r.name} has invalid capacity`)});
+ return {issues,warnings};
+}
+function renderValidation(extra=[]){
+ let v=validateData(), all=[...v.issues.map(x=>({t:x,w:true})),...v.warnings.map(x=>({t:x,w:true})),{t:`${data.assignments.length} exam entries`,w:false},{t:`${data.rooms.length} exam rooms`,w:false},{t:`${schedule.length||0} graph-color slots`,w:false}];
+ document.getElementById('validationPanel').innerHTML=`<div class="validation-list">${all.map(x=>`<div class="validation-item ${x.w?'warn':''}">${x.w?'⚠':'✓'} ${x.t}</div>`).join('')}</div>`;
+}
+function generateSchedule(){
+ let v=validateData(); if(v.issues.length){alert(v.issues.join('\\n'));return}
+ let {exams,adj}=getGraph(); if(!exams.length){alert('Assign at least one subject to a class first.');return}
+ let color={};
+ [...exams].sort((a,b)=>adj[b.id].size-adj[a.id].size).forEach(e=>{let used=new Set([...adj[e.id]].map(n=>color[n]).filter(x=>x!=null));let c=0;while(used.has(c))c++;color[e.id]=c});
+ let max=Math.max(-1,...Object.values(color));
+ schedule=Array.from({length:max+1},(_,i)=>({slot:i+1,exams:exams.filter(e=>color[e.id]===i)}));
+ schedule.forEach(slot=>slot.exams.forEach(e=>{e.color=slot.slot;e.room=null}));
+ let dayNo=1;
+ schedule.forEach((slot,i)=>{
+   if(i%2===0 && i>0) dayNo++;
+   slot.day=dayNo;slot.period=i%2===0?'9:00 AM – 12:00 PM':'1:00 PM – 4:00 PM';
+   let usedRooms=new Set();
+   slot.exams.forEach(e=>{let students=Math.max(0,...e.classes.map(c=>data.classes.find(k=>k.id===c)?.students||0));let r=data.rooms.find(r=>r.capacity>=students&&!usedRooms.has(r.id))||data.rooms.find(r=>r.capacity>=students);if(r){e.room=r.name;e.roomCapacity=r.capacity;e.students=students;usedRooms.add(r.id)}});
+ });
+ updateStats();renderTimetable();buildGraph();document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));let t=[...document.querySelectorAll('.nav button')].find(x=>x.textContent==='Timetable');t.classList.add('active');showPage('timetable',t);
+}
+function renderTimetable(){
+ let el=document.getElementById('timetableView'); renderValidation();
+ if(!schedule.length){el.innerHTML='<div class="empty">No timetable generated yet. Click “Generate Timetable”.</div>';return}
+ let days=[...new Set(schedule.map(x=>x.day))];
+ document.getElementById('scheduleStatus').textContent=`${days.length} day${days.length>1?'s':''} · 2 exam slots per day · 9:00 AM–12:00 PM and 1:00 PM–4:00 PM`;
+ el.innerHTML=days.map(day=>{
+   let ds=schedule.filter(x=>x.day===day);
+   return `<div class="timetable-day"><div class="day-title">Day ${day}</div>
+   ${['9:00 AM – 12:00 PM','1:00 PM – 4:00 PM'].map(period=>{let slot=ds.find(x=>x.period===period);return `<div class="slot-row"><div class="slot-time">${period}</div><div class="slot-exams">${slot?.exams?.length?slot.exams.map(e=>`<div class="exam-chip"><strong>${e.name}</strong><small>${e.code||'No code'} · ${e.classes.map(c=>data.classes.find(k=>k.id===c)?.name).join(', ')}</small><small>Room: ${e.room||'No suitable room'}</small></div>`).join(''):'<span style="color:var(--muted)">No exam assigned</span>'}</div></div>`}).join('')}</div>`
+ }).join('');
+}
+function openRoom(id=null){let x=data.rooms.find(a=>a.id===id)||{name:'',capacity:''};openModal(`<h2>${id?'Edit':'Add'} Exam Room</h2><div class="formgrid"><div class="field"><label>Room Name</label><input id="fName" value="${x.name}"></div><div class="field"><label>Capacity</label><input id="fCapacity" type="number" value="${x.capacity}"></div></div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn" onclick="saveRoom(${id||0})">Save</button></div>`)}
+function saveRoom(id){let name=fName.value.trim(),capacity=+fCapacity.value;if(!name||capacity<=0)return alert('Enter a valid room and capacity.');if(id)Object.assign(data.rooms.find(x=>x.id===id),{name,capacity});else data.rooms.push({id:Date.now(),name,capacity});save();closeModal();renderRooms()}
+function renderRooms(){document.getElementById('roomsTable').innerHTML=data.rooms.length?`<table><thead><tr><th>Room</th><th>Capacity</th><th>Actions</th></tr></thead><tbody>${data.rooms.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.capacity}</td><td class="actions"><button class="iconbtn" onclick="openRoom(${x.id})">Edit</button><button class="iconbtn" onclick="deleteRoom(${x.id})">Delete</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No exam rooms found.</div>'}
+function deleteRoom(id){if(confirm('Delete this room?')){data.rooms=data.rooms.filter(x=>x.id!==id);save();renderRooms()}}
+function exportCSV(){if(!schedule.length)return alert('Generate the timetable first.');let rows=[['Day','Time','Subject','Code','Classes','Room']];schedule.forEach(s=>s.exams.forEach(e=>rows.push([s.day,s.period,e.name,e.code||'',e.classes.map(c=>data.classes.find(k=>k.id===c)?.name).join(' | '),e.room||'No suitable room'])));let csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='exam_timetable.csv';a.click()}
+function printTimetable(){if(!schedule.length)return alert('Generate the timetable first.');window.print()}
+function updateStats(){document.getElementById('classCount').textContent=data.classes.length;document.getElementById('subjectCount').textContent=data.subjects.length;document.getElementById('examCount').textContent=data.assignments.length;document.getElementById('slotCount').textContent=schedule.length}
+function applyTheme(theme){
+ document.body.classList.toggle('dark',theme==='dark');
+ localStorage.setItem('examTheme',theme);
+ const icon=document.getElementById('themeIcon');
+ if(icon)icon.textContent=theme==='dark'?'☀':'☾';
+ const btn=document.getElementById('themeToggle');
+ if(btn)btn.title=theme==='dark'?'Switch to light mode':'Switch to dark mode';
+}
+function toggleTheme(){applyTheme(document.body.classList.contains('dark')?'light':'dark')}
+function showPage(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');if(id==='classes')renderClasses();if(id==='subjects')renderSubjects();if(id==='assignments')renderAssignments();if(id==='rooms')renderRooms();if(id==='graph')buildGraph();if(id==='timetable')renderTimetable();if(id==='dashboard')loadSettings()}
+if(!data.rooms)data.rooms=[];if(!data.settings)data.settings={};applyTheme(localStorage.getItem('examTheme')||'light');updateStats();renderClasses();renderSubjects();renderAssignments();renderRooms();
+</script>
+</body></html>
