@@ -12,7 +12,7 @@
 
 **Live Website:** [Open Exam Flow](https://afthab556.github.io/Exam_TimeTable_Sheduling_System_Using_Graph_Theory/)
 
-**GitHub Repository:** [View Source Code](https://github.com/Afthab556/Exam_TimeTable_Scheduling_System_Using_Graph_Theory)
+**GitHub Repository:** [View Source Code](https://github.com/Afthab556/Exam_TimeTable_Sheduling_System_Using_Graph_Theory)
 
 ---
 
